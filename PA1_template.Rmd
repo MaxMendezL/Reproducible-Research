@@ -1,0 +1,76 @@
+---
+title: "Reproducible Research-Course Project 1"
+output: html_document
+---
+
+```{r setup, include=TRUE, echo=TRUE}
+library(ggplot2)
+library(dplyr)
+```
+
+
+```{r, include=TRUE, echo=TRUE} 
+        #1.What is mean total number of steps taken per day?
+        #1. Code for reading in the dataset and/or processing the data
+        getwd()
+        activity<- read.csv("activity.csv")
+        perday<-aggregate(activity$steps, by=list(activity$date), FUN=sum)
+        summary(perday)
+
+        #2. Histogram of the total number of steps taken each day
+        ggplot(perday, aes(x=x)) + geom_histogram(color="black", fill="light blue", bins=5) +xlab("Steps per Day") + ylab("Frequency")
+
+        #3. Mean and median number of steps taken each day
+        median<- median(activity$steps, na.rm=T)
+        mean<-mean(activity$steps, na.rm=T)
+        values<-rbind(median,mean)
+        print(values)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+```{r,include=TRUE, echo=TRUE}
+#2.What is the average daily activity pattern?
+
+        #1. Time series plot of the average number of steps taken
+        activity2<-perday<-aggregate(activity$steps, by=list(activity$interval), FUN=mean, na.rm=T)
+
+        #2.The 5-minute interval that, on average, contains the maximum number of steps
+        plot(x~Group.1, data=activity2, type="l", xlab="Interval", ylab="Average Steps")
+
+```
+
+```{r,include=TRUE, echo=TRUE}
+#3.Imputing missing values
+        #1. Code to describe and show a strategy for imputing missing data
+        sum(is.na(activity$steps))
+
+        #2,3,4. Histogram of the total number of steps taken each day after missing values are imputed
+        new_data<-aggregate(activity$steps, by=list(activity$date), FUN=sum)
+        ggplot(new_data, aes(x=x)) + geom_histogram(color="black", fill="light blue", bins=5) +xlab("Steps per Day") + ylab("Frequency")
+        median2<- median(new_data$x, na.rm=T)
+        mean2<-mean(new_data$x,na.rm=T)
+        values2<-rbind(median2,mean2)
+        print(values2)
+
+```
+
+```{r,include=TRUE, echo=TRUE}
+#4.Are there differences in activity patterns between weekdays and weekends?
+        #1.Create a new factor variable in the dataset with two levels – “weekday” and “weekend” indicating            whether a given date is a weekday or weekend
+        library(lubridate)
+        activity$days<-wday(as.Date(activity$date,'%Y-%m-%d'), label=T)
+        weekends<- subset(activity, activity$days == "Sat"| activity$days=="Sun", na.rm=T)
+        weekends<-aggregate(weekends$steps, by=list(weekends$interval), FUN=mean, na.rm=T)
+        weekdays<-subset(activity, activity$days !="Sat" & activity$days!="Sun", na.rm=T)
+        weekdays<-aggregate(weekdays$steps, by=list(weekdays$interval), FUN=mean, na.rm=T)
+
+        #2. Panel plot comparing the average number of steps taken per 5-minute interval across weekdays and         weekends
+        par(mfrow=c(2,1),mar=c(4,4,2,1))
+        plot(x~Group.1, data=weekends, type="l", xlab="Interval", ylab="Average Steps", main="Weekdays")
+        plot(x~Group.1, data=weekdays, type="l", xlab="Interval", ylab="Average Steps", main="Weekends")
+
+
+
+
+
